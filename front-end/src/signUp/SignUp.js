@@ -5,12 +5,36 @@ import {
     useLocation,
     useNavigate
 } from "react-router-dom";
+import $ from "jquery";
 
 export let SignUp = (props) => {
     let location = useLocation();
     let navigate = useNavigate();
     let from = location.state?.from?.pathname || "/";
     const [status, setStatus] = useState(false);
+    const [isSeller, setIsSeller] = useState(false);
+    let handleRegister = () => {
+        let userData = {
+            username: document.getElementById("login").value,
+            password: document.getElementById("password").value,
+            role: isSeller ? "ROLE_SELLER" : "ROLE_CUSTOMER"
+        }
+        $.ajax({
+            url: 'http://d-pimenov.ru/auth/register',
+            type: 'POST',
+            async: true,
+            contentType: 'application/json; charset=utf-8',
+            data: JSON.stringify(userData),
+            success: (res) => {
+                alert("Вы успешно зарегистрировались");
+                navigate("/", {replace: true});
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                alert(jqXHR.responseText);
+                window.location.reload();
+            }
+        });
+    }
 
     return (
         <div id="signInWrap">
@@ -19,6 +43,7 @@ export let SignUp = (props) => {
                     <h2>Регистрация</h2>
                     <form id="registerForm" onSubmit={(e) => {
                         e.preventDefault();
+                        handleRegister();
                     }}>
                         <TextField
                             style={{ marginBottom: "24px" }}
@@ -54,8 +79,8 @@ export let SignUp = (props) => {
                             }}
                             variant="outlined"
                         /><br />
-                        <FormControlLabel id="isSeller" control={<Checkbox defaultChecked />} label="Диллер?" />
-                        <Button  fullWidth color="secondary" variant="contained" onClick={() => { navigate("/register"); }}>Зарегистрироватсья</Button><br />
+                        <FormControlLabel id="isSeller" control={<Checkbox value={isSeller} onChange={(e) => {setIsSeller(e.target.checked)}}/>} label="Диллер?" />
+                        <Button  fullWidth color="secondary" variant="contained" type="submit">Зарегистрироватсья</Button><br />
                     </form>
                 </div>
             </div>

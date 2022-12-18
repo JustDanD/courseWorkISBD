@@ -1,16 +1,38 @@
-import {Fragment, useState} from "react";
+import {useState} from "react";
 import {Button, InputAdornment, TextField} from "@mui/material";
-import {AccountCircle, AlternateEmail, VpnKey} from "@mui/icons-material";
-import {
-    useLocation,
-    useNavigate
-} from "react-router-dom";
+import {AccountCircle, VpnKey} from "@mui/icons-material";
+import {useLocation, useNavigate} from "react-router-dom";
+import $ from "jquery";
 
 export let SignIn = (props) => {
     let location = useLocation();
     let navigate = useNavigate();
     let from = location.state?.from?.pathname || "/";
     const [status, setStatus] = useState(false);
+
+    let handleSignIn = () => {
+        let userData = {
+            username: document.getElementById("login").value,
+            password: document.getElementById("password").value,
+        }
+        $.ajax({
+            url: 'http://d-pimenov.ru/auth/signIn',
+            type: 'POST',
+            headers: {
+                'Access-Control-Allow-Credentials': true
+            },
+            async: true,
+            contentType: 'application/json; charset=utf-8',
+            data: JSON.stringify(userData),
+            success: (res) => {
+                navigate("/", {replace: true});
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                alert(JSON.parse(jqXHR.responseText).message);
+                window.location.reload();
+            }
+        });
+    };
 
     return (
         <div id="signInWrap">
@@ -19,6 +41,7 @@ export let SignIn = (props) => {
                     <h2>Вход</h2>
                     <form id="loginForm" onSubmit={(e) => {
                         e.preventDefault();
+                        handleSignIn();
                     }}>
                         <TextField
                             style={{ marginBottom: "24px" }}
