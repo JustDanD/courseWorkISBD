@@ -1,10 +1,7 @@
 import {Fragment, useEffect, useState} from "react";
 import {Button, Checkbox, FormControlLabel, InputAdornment, TextField} from "@mui/material";
-import {AccountCircle, AlternateEmail, VpnKey} from "@mui/icons-material";
-import {
-    useLocation,
-    useNavigate
-} from "react-router-dom";
+import {AccountCircle, VpnKey} from "@mui/icons-material";
+import {useLocation, useNavigate} from "react-router-dom";
 import $ from "jquery";
 
 export let SignUp = (props) => {
@@ -23,6 +20,7 @@ export let SignUp = (props) => {
                 navigate("/", {replace: true});
             },
             error: function (jqXHR, textStatus, errorThrown) {
+                setStatus(true);
             }
         });
     }, []);
@@ -51,52 +49,60 @@ export let SignUp = (props) => {
     }
 
     return (
-        <div id="signInWrap">
-            <div id="signInForm">
-                <div>
-                    <h2>Регистрация</h2>
-                    <form id="registerForm" onSubmit={(e) => {
-                        e.preventDefault();
-                        handleRegister();
-                    }}>
-                        <TextField
-                            style={{ marginBottom: "24px" }}
-                            id="login"
-                            type='text'
-                            label="Login"
-                            focused
-                            fullWidth
-                            InputProps={{
-                                startAdornment: (
-                                    <InputAdornment position="start">
-                                        <AccountCircle color="primary"/>
-                                    </InputAdornment>
-                                ),
-                            }}
-                            variant="outlined"
-                            required
-                        /><br />
-                        <TextField
-                            required
-                            id="password"
-                            autoComplete='new-password'
-                            label="Пароль"
-                            type="password"
-                            focused
-                            fullWidth
-                            InputProps={{
-                                startAdornment: (
-                                    <InputAdornment position="start">
-                                        <VpnKey color="primary"/>
-                                    </InputAdornment>
-                                ),
-                            }}
-                            variant="outlined"
-                        /><br />
-                        <FormControlLabel id="isSeller" control={<Checkbox value={isSeller} onChange={(e) => {setIsSeller(e.target.checked)}}/>} label="Диллер?" />
-                        <Button  fullWidth color="secondary" variant="contained" type="submit">Зарегистрироватсья</Button><br />
-                    </form>
-                </div>
-            </div>
-        </div>);
+        <Fragment>
+            {
+                status ?
+                <div id="signInWrap">
+                    <div id="signInForm">
+                        <div>
+                            <h2>Регистрация</h2>
+                            <form id="registerForm" onSubmit={(e) => {
+                                e.preventDefault();
+                                handleRegister();
+                            }}>
+                                <TextField
+                                    style={{marginBottom: "24px"}}
+                                    id="login"
+                                    type='text'
+                                    label="Login"
+                                    focused
+                                    fullWidth
+                                    InputProps={{
+                                        startAdornment: (
+                                            <InputAdornment position="start">
+                                                <AccountCircle color="primary"/>
+                                            </InputAdornment>
+                                        ),
+                                    }}
+                                    variant="outlined"
+                                    required
+                                /><br/>
+                                <TextField
+                                    required
+                                    id="password"
+                                    autoComplete='new-password'
+                                    label="Пароль"
+                                    type="password"
+                                    focused
+                                    fullWidth
+                                    InputProps={{
+                                        startAdornment: (
+                                            <InputAdornment position="start">
+                                                <VpnKey color="primary"/>
+                                            </InputAdornment>
+                                        ),
+                                    }}
+                                    variant="outlined"
+                                /><br/>
+                                <FormControlLabel id="isSeller" control={<Checkbox value={isSeller} onChange={(e) => {
+                                    setIsSeller(e.target.checked)
+                                }}/>} label="Диллер?"/>
+                                <Button fullWidth color="secondary" variant="contained"
+                                        type="submit">Зарегистрироватсья</Button><br/>
+                            </form>
+                        </div>
+                    </div>
+                </div> : null
+            }
+        </Fragment>);
 }
