@@ -1,4 +1,4 @@
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {Button, InputAdornment, TextField} from "@mui/material";
 import {AccountCircle, VpnKey} from "@mui/icons-material";
 import {useLocation, useNavigate} from "react-router-dom";
@@ -9,6 +9,19 @@ export let SignIn = (props) => {
     let navigate = useNavigate();
     let from = location.state?.from?.pathname || "/";
     const [status, setStatus] = useState(false);
+
+    useEffect(() => {
+        $.ajax({
+            url: 'http://d-pimenov.ru/auth/isAuthenticated',
+            type: 'POST',
+            async: true,
+            success: (res) => {
+                navigate("/", {replace: true});
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+            }
+        });
+    }, []);
 
     let handleSignIn = () => {
         let userData = {

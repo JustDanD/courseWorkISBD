@@ -1,4 +1,4 @@
-import {Fragment, useState} from "react";
+import {Fragment, useEffect, useState} from "react";
 import {Button, Checkbox, FormControlLabel, InputAdornment, TextField} from "@mui/material";
 import {AccountCircle, AlternateEmail, VpnKey} from "@mui/icons-material";
 import {
@@ -13,6 +13,20 @@ export let SignUp = (props) => {
     let from = location.state?.from?.pathname || "/";
     const [status, setStatus] = useState(false);
     const [isSeller, setIsSeller] = useState(false);
+
+    useEffect(() => {
+        $.ajax({
+            url: 'http://d-pimenov.ru/auth/isAuthenticated',
+            type: 'POST',
+            async: true,
+            success: (res) => {
+                navigate("/", {replace: true});
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+            }
+        });
+    }, []);
+
     let handleRegister = () => {
         let userData = {
             username: document.getElementById("login").value,
