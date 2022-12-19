@@ -4,6 +4,7 @@ import itmo.zavar.isbdcyberpunk.auth.security.jwt.AuthEntryPointJwt;
 import itmo.zavar.isbdcyberpunk.auth.security.jwt.AuthTokenFilter;
 import itmo.zavar.isbdcyberpunk.auth.security.services.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -24,9 +25,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableMethodSecurity(prePostEnabled = true)
 public class WebSecurityConfig {
     @Autowired
-    private UserDetailsServiceImpl userDetailsService;
-
-    @Autowired
     private AuthEntryPointJwt unauthorizedHandler;
 
     @Bean
@@ -34,13 +32,8 @@ public class WebSecurityConfig {
         return new AuthTokenFilter();
     }
 
-//    @Bean
-//    public WebSecurityCustomizer webSecurityCustomizer() {
-//        return (web) -> web.ignoring().requestMatchers("/js/**", "/images/**");
-//    }
-
     @Bean
-    public AuthenticationManager authenticationManager(UserDetailsService myUserDetailsService, PasswordEncoder encoder) throws Exception {
+    public AuthenticationManager authenticationManager(@Qualifier("userDetailsServiceImpl") UserDetailsService myUserDetailsService, PasswordEncoder encoder) {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setUserDetailsService(myUserDetailsService);
         provider.setPasswordEncoder(encoder);
