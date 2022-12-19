@@ -1,7 +1,7 @@
 package itmo.zavar.isbdcyberpunk.auth.security.services;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import itmo.zavar.isbdcyberpunk.auth.models.User;
+import itmo.zavar.isbdcyberpunk.auth.models.user.UserEntity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -29,13 +29,13 @@ public class UserDetailsImpl implements UserDetails {
         this.authorities = authorities;
     }
 
-    public static UserDetailsImpl build(User user) {
-        List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(user.getRole().getName().name()));
+    public static UserDetailsImpl build(UserEntity userEntity) {
+        List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(userEntity.getRole().getName().name()));
 
         return new UserDetailsImpl(
-                user.getId(),
-                user.getUsername(),
-                user.getPassword(),
+                userEntity.getId(),
+                userEntity.getUsername(),
+                userEntity.getPassword(),
                 authorities);
     }
 

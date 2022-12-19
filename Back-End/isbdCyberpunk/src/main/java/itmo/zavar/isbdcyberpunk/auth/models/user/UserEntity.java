@@ -1,4 +1,4 @@
-package itmo.zavar.isbdcyberpunk.auth.models;
+package itmo.zavar.isbdcyberpunk.auth.models.user;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -13,32 +13,27 @@ import lombok.Setter;
                 @UniqueConstraint(columnNames = "username")
         })
 @NoArgsConstructor
-public class User {
+@Getter
+@Setter
+public class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Getter
-    @Setter
     private Long id;
 
     @NotBlank
     @Size(max = 20)
-    @Getter
-    @Setter
     private String username;
 
     @NotBlank
     @Size(max = 120)
-    @Getter
-    @Setter
     private String password;
 
+    @NotBlank
     @ManyToOne
     @JoinColumn(name = "role")
-    @Getter
-    @Setter
     private RoleEntity role;
 
-    public User(String username, String password) {
+    public UserEntity(String username, String password) {
         this.username = username;
         this.password = password;
     }

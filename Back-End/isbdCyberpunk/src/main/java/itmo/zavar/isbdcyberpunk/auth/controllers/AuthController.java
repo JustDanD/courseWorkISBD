@@ -1,8 +1,8 @@
 package itmo.zavar.isbdcyberpunk.auth.controllers;
 
-import itmo.zavar.isbdcyberpunk.auth.models.RoleEntity;
-import itmo.zavar.isbdcyberpunk.auth.models.User;
-import itmo.zavar.isbdcyberpunk.auth.models.UserRole;
+import itmo.zavar.isbdcyberpunk.auth.models.user.RoleEntity;
+import itmo.zavar.isbdcyberpunk.auth.models.user.UserEntity;
+import itmo.zavar.isbdcyberpunk.auth.models.user.UserRole;
 import itmo.zavar.isbdcyberpunk.auth.payload.request.RegisterRequest;
 import itmo.zavar.isbdcyberpunk.auth.payload.request.SignInRequest;
 import itmo.zavar.isbdcyberpunk.auth.payload.response.MessageResponse;
@@ -62,7 +62,7 @@ public class AuthController {
         if (userRepository.existsByUsername(registerRequest.getUsername()))
             return ResponseEntity.status(HttpStatusCode.valueOf(400)).body(new MessageResponse("Error: Username is already taken!"));
 
-        User user = new User(registerRequest.getUsername(), encoder.encode(registerRequest.getPassword()));
+        UserEntity userEntity = new UserEntity(registerRequest.getUsername(), encoder.encode(registerRequest.getPassword()));
 
         RoleEntity roleEntity;
 
@@ -70,16 +70,16 @@ public class AuthController {
             UserRole userRole = UserRole.valueOf(registerRequest.getRole());
             roleEntity = roleRepository.findByName(userRole)
                     .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-            user.setRole(roleEntity);
+            userEntity.setRole(roleEntity);
         } catch (IllegalArgumentException e) {
             throw new RuntimeException("Error: Role is not found.");
         } catch (NullPointerException e) {
             roleEntity = roleRepository.findByName(UserRole.ROLE_CUSTOMER)
                     .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-            user.setRole(roleEntity);
+            userEntity.setRole(roleEntity);
         }
 
-        userRepository.save(user);
+        userRepository.save(userEntity);
 
         return ResponseEntity.ok().build();
     }

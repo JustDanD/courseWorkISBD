@@ -1,13 +1,12 @@
 package itmo.zavar.isbdcyberpunk.auth.security.services;
 
-import itmo.zavar.isbdcyberpunk.auth.models.User;
+import itmo.zavar.isbdcyberpunk.auth.models.user.UserEntity;
 import itmo.zavar.isbdcyberpunk.auth.payload.response.MessageResponse;
 import itmo.zavar.isbdcyberpunk.auth.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,19 +20,19 @@ public class UserDetailsServiceImpl implements CyberpunkUserDetailsService {
     @Override
     @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByUsername(username)
+        UserEntity userEntity = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User Not Found with username: " + username));
 
-        return UserDetailsImpl.build(user);
+        return UserDetailsImpl.build(userEntity);
     }
 
     @Override
     @Transactional
     public UserDetails loadUserById(Long id) throws IllegalArgumentException {
-        User user = userRepository.findById(id)
+        UserEntity userEntity = userRepository.findById(id)
                 .orElseThrow(() -> new UsernameNotFoundException("User Not Found with id: " + id));
 
-        return UserDetailsImpl.build(user);
+        return UserDetailsImpl.build(userEntity);
     }
 
     @ExceptionHandler(UsernameNotFoundException.class)

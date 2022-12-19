@@ -1,4 +1,4 @@
-package itmo.zavar.isbdcyberpunk.auth.models;
+package itmo.zavar.isbdcyberpunk.auth.models.user;
 
 import jakarta.persistence.*;
 import lombok.*;
