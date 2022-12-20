@@ -42,4 +42,10 @@ public class OrderEntity {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private ListCustomersEntity customerId;
 
+    public OrderEntity(Date creationTime, Long price, OrderStatusEntity status, ListCustomersEntity customerId) {
+        this.creationTime = creationTime;
+        this.price = price;
+        this.status = status;
+        this.customerId = customerId;
+    }
 }

@@ -1,5 +1,6 @@
 package itmo.zavar.isbdcyberpunk.models.shop;
 
+import itmo.zavar.isbdcyberpunk.models.shop.storage.StorageElementEntity;
 import itmo.zavar.isbdcyberpunk.models.user.list.ListAdminsEntity;
 import itmo.zavar.isbdcyberpunk.models.user.list.ListCustomersEntity;
 import jakarta.persistence.*;
@@ -29,7 +30,11 @@ public class ShoppingCartEntity {
 
     @NotNull
     @ManyToOne
-    @JoinColumn(name = "cyberware_id")
-    private ListAdminsEntity cyberwareId;
+    @JoinColumn(name = "storage_element_id")
+    private StorageElementEntity storageElementEntity;
 
+    public ShoppingCartEntity(ListCustomersEntity customerId, StorageElementEntity storageElementEntity) {
+        this.customerId = customerId;
+        this.storageElementEntity = storageElementEntity;
+    }
 }

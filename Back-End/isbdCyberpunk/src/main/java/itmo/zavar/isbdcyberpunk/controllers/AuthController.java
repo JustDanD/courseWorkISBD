@@ -93,7 +93,7 @@ public class AuthController {
 
         userRepository.save(userEntity);
         BillingEntity billing = new BillingEntity();
-        billing.setSum(120L);
+        billing.setSum(40000L);
         billingEntityRepository.save(billing);
         ListCustomersEntity listCustomersEntity = new ListCustomersEntity(userEntity, billing);
         customersEntityRepository.save(listCustomersEntity);

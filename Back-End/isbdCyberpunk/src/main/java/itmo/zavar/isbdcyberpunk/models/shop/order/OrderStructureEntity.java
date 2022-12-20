@@ -1,6 +1,7 @@
 package itmo.zavar.isbdcyberpunk.models.shop.order;
 
 import itmo.zavar.isbdcyberpunk.models.cyberware.CyberwareEntity;
+import itmo.zavar.isbdcyberpunk.models.shop.storage.StorageElementEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -22,8 +23,8 @@ public class OrderStructureEntity {
 
     @NotNull
     @ManyToOne
-    @JoinColumn(name = "cyberware_id")
-    private CyberwareEntity cyberwareId;
+    @JoinColumn(name = "storage_element")
+    private StorageElementEntity storageElement;
 
     @NotNull
     @ManyToOne
@@ -31,4 +32,8 @@ public class OrderStructureEntity {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private OrderEntity orderId;
 
+    public OrderStructureEntity(StorageElementEntity storageElement, OrderEntity orderId) {
+        this.storageElement = storageElement;
+        this.orderId = orderId;
+    }
 }

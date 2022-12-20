@@ -1,5 +1,6 @@
 package itmo.zavar.isbdcyberpunk.models.user.info;
 
+import itmo.zavar.isbdcyberpunk.models.cyberware.CyberwareEntity;
 import itmo.zavar.isbdcyberpunk.models.user.list.ListAdminsEntity;
 import itmo.zavar.isbdcyberpunk.models.user.list.ListCustomersEntity;
 import jakarta.persistence.*;
@@ -30,7 +31,7 @@ public class ListOwnedCyberwaresEntity {
     @NotNull
     @ManyToOne
     @JoinColumn(name = "cyberware_id")
-    private ListAdminsEntity cyberwareId;
+    private CyberwareEntity cyberwareId;
 
     @NotNull
     private Boolean installed;

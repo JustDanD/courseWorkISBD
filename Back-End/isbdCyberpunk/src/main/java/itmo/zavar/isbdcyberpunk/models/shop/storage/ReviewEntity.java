@@ -1,5 +1,7 @@
 package itmo.zavar.isbdcyberpunk.models.shop.storage;
 
+import itmo.zavar.isbdcyberpunk.models.user.list.ListCustomersEntity;
+import itmo.zavar.isbdcyberpunk.models.user.list.ListSellersEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -27,6 +29,12 @@ public class ReviewEntity {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private StorageElementEntity storageElement;
 
+    @NotNull
+    @ManyToOne
+    @JoinColumn(name = "author")
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private ListCustomersEntity listCustomersEntity;
+
     @NotBlank
     private String review;
 
@@ -34,4 +42,11 @@ public class ReviewEntity {
     @Min(0)
     @Max(5)
     private Double rating;
+
+    public ReviewEntity(StorageElementEntity storageElement, ListCustomersEntity listCustomersEntity, String review, Double rating) {
+        this.storageElement = storageElement;
+        this.listCustomersEntity = listCustomersEntity;
+        this.review = review;
+        this.rating = rating;
+    }
 }

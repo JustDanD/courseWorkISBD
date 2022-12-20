@@ -3,19 +3,17 @@ package itmo.zavar.isbdcyberpunk.service;
 import itmo.zavar.isbdcyberpunk.models.user.UserEntity;
 import itmo.zavar.isbdcyberpunk.models.user.info.BillingEntity;
 import itmo.zavar.isbdcyberpunk.models.user.list.ListCustomersEntity;
-import itmo.zavar.isbdcyberpunk.repository.BillingEntityRepository;
 import itmo.zavar.isbdcyberpunk.repository.ListCustomersEntityRepository;
 import itmo.zavar.isbdcyberpunk.repository.UserRepository;
 import itmo.zavar.isbdcyberpunk.security.services.UserDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
 @Service
-public class UserServiceImpl {
+public class UserFullDetailsServiceImpl {
 
     @Autowired
     private ListCustomersEntityRepository customersEntityRepository;
