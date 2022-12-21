@@ -4,6 +4,7 @@ import itmo.zavar.isbdcyberpunk.models.cyberware.CyberwareEntity;
 import itmo.zavar.isbdcyberpunk.models.shop.order.OrderEntity;
 import itmo.zavar.isbdcyberpunk.models.user.info.ListOwnedCyberwaresEntity;
 import itmo.zavar.isbdcyberpunk.models.user.list.ListCustomersEntity;
+import itmo.zavar.isbdcyberpunk.payload.response.OrderHistoryResponse;
 import itmo.zavar.isbdcyberpunk.payload.response.SetCyberwareResponse;
 import itmo.zavar.isbdcyberpunk.repository.ListCustomersEntityRepository;
 import itmo.zavar.isbdcyberpunk.repository.ListOwnedCyberwaresEntityRepository;
@@ -16,6 +17,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,11 +37,12 @@ public class UserProfileController {
 
     @GetMapping("/getOrdersHistory")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<OrderEntity>> getOrdersHistory() {
+    public ResponseEntity<List<OrderHistoryResponse>> getOrdersHistory() {
         UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Optional<ListCustomersEntity> listById = customersEntityRepository.findByUserId_Id(principal.id());
         List<OrderEntity> history = orderEntityRepository.findAllByCustomerId_Id(listById.get().getId());
-        return ResponseEntity.ok(history);
+        List<OrderHistoryResponse> orderHistoryResponses = history.stream().map(orderEntity -> new OrderHistoryResponse(orderEntity.getId(), orderEntity.getCreationTime(), orderEntity.getPrice(), orderEntity.getStatus(), orderEntity.getCustomerId().getId(), orderEntity.getCustomerId().getUserId().getUsername())).toList();
+        return ResponseEntity.ok(orderHistoryResponses);
     }
 
     @PostMapping("/setCyberware")
