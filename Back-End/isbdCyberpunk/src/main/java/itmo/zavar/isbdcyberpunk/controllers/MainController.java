@@ -1,7 +1,10 @@
 package itmo.zavar.isbdcyberpunk.controllers;
 
 import itmo.zavar.isbdcyberpunk.models.cyberware.CyberwareEntity;
+import itmo.zavar.isbdcyberpunk.models.cyberware.CyberwareRarityEntity;
+import itmo.zavar.isbdcyberpunk.models.cyberware.CyberwareTypeEntity;
 import itmo.zavar.isbdcyberpunk.models.shop.ShoppingCartEntity;
+import itmo.zavar.isbdcyberpunk.models.shop.storage.SellingPointEntity;
 import itmo.zavar.isbdcyberpunk.models.shop.storage.StorageElementEntity;
 import itmo.zavar.isbdcyberpunk.models.user.UserEntity;
 import itmo.zavar.isbdcyberpunk.models.user.info.BillingEntity;
@@ -9,6 +12,8 @@ import itmo.zavar.isbdcyberpunk.models.user.list.ListCustomersEntity;
 import itmo.zavar.isbdcyberpunk.payload.request.AddToCartRequest;
 import itmo.zavar.isbdcyberpunk.payload.request.GetCyberwaresRequest;
 import itmo.zavar.isbdcyberpunk.payload.response.CartSizeResponse;
+import itmo.zavar.isbdcyberpunk.payload.response.GetCyberwareDetailsResponse;
+import itmo.zavar.isbdcyberpunk.payload.response.GetCyberwaresResponse;
 import itmo.zavar.isbdcyberpunk.payload.response.UserFullDetailsResponse;
 import itmo.zavar.isbdcyberpunk.repository.*;
 import itmo.zavar.isbdcyberpunk.security.services.UserDetailsImpl;
@@ -22,6 +27,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -43,6 +49,15 @@ public class MainController {
 
     @Autowired
     private CyberwareEntityRepository cyberwareEntityRepository;
+
+    @Autowired
+    private SellingPointEntityRepository sellingPointEntityRepository;
+
+    @Autowired
+    private CyberwareTypeEntityRepository cyberwareTypeEntityRepository;
+
+    @Autowired
+    private CyberwareRarityEntityRepository cyberwareRarityEntityRepository;
 
     @GetMapping("/getUserDetails")
     @PreAuthorize("isAuthenticated()")
@@ -76,16 +91,24 @@ public class MainController {
 
     @GetMapping("/getCyberwares")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<CyberwareEntity>> getCyberwares(@Valid @RequestBody GetCyberwaresRequest getCyberwaresRequest) {
+    public ResponseEntity<List<GetCyberwaresResponse>> getCyberwares(@Valid @RequestBody GetCyberwaresRequest getCyberwaresRequest) {
         UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         List<CyberwareEntity> all = cyberwareEntityRepository.findAll().stream().skip(getCyberwaresRequest.getStartPosition()).toList();
+
+        if(getCyberwaresRequest.getRarity().isEmpty()) {
+            getCyberwaresRequest.getRarity().addAll(cyberwareRarityEntityRepository.findAll().stream().map(CyberwareRarityEntity::getName).toList());
+        }
+        if(getCyberwaresRequest.getType().isEmpty()) {
+            getCyberwaresRequest.getType().addAll(cyberwareTypeEntityRepository.findAll().stream().map(CyberwareTypeEntity::getTypeName).toList());
+        }
 
         List<CyberwareEntity> filtered = all.stream().filter(entity -> {
             Optional<StorageElementEntity> byCyberware = storageElementEntityRepository.findByCyberwareId(entity);
             if (byCyberware.isPresent()) {
                 StorageElementEntity storageElementEntity = byCyberware.get();
-                if (storageElementEntity.getPrice() >= getCyberwaresRequest.getStartPrice() &&
-                        storageElementEntity.getPrice() <= getCyberwaresRequest.getEndPrice()) {
+                if ((storageElementEntity.getPrice() >= getCyberwaresRequest.getStartPrice() &&
+                        storageElementEntity.getPrice() <= getCyberwaresRequest.getEndPrice() ||
+                        (getCyberwaresRequest.getStartPrice() == 0 && getCyberwaresRequest.getEndPrice() == -1))) {
                     return getCyberwaresRequest.getRarity().contains(entity.getRarity().getName()) &&
                             getCyberwaresRequest.getType().contains(entity.getType().getTypeName());
                 } else {
@@ -96,7 +119,25 @@ public class MainController {
             }
         }).limit(getCyberwaresRequest.getSize()).toList();
 
-        return ResponseEntity.ok(filtered);
+        List<GetCyberwaresResponse> output = new ArrayList<>();
+
+        for (CyberwareEntity entity : filtered) {
+            Optional<StorageElementEntity> optionalStorageElement = storageElementEntityRepository.findByCyberwareId(entity);
+            if (optionalStorageElement.isPresent()) {
+                StorageElementEntity storageElementEntity = optionalStorageElement.get();
+                Optional<SellingPointEntity> optionalSellingPointEntity = sellingPointEntityRepository.findByStorageEntity_Id(storageElementEntity.getStorageId().getId());
+                if (optionalSellingPointEntity.isPresent()) {
+                    SellingPointEntity sellingPointEntity = optionalSellingPointEntity.get();
+                    output.add(new GetCyberwaresResponse(sellingPointEntity.getId(), sellingPointEntity.getName(), entity, storageElementEntity.getRating(), storageElementEntity.getCount(), storageElementEntity.getPrice()));
+                } else {
+                    return ResponseEntity.status(400).build();
+                }
+            } else {
+                return ResponseEntity.status(400).build();
+            }
+        }
+
+        return ResponseEntity.ok(output);
     }
 
     @PostMapping("/addToCart")
