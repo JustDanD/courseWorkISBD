@@ -64,6 +64,10 @@ public class CartController {
         Optional<ListCustomersEntity> customer = customersEntityRepository.findByUserId_Id(principal.id());
         List<StorageElementEntity> ids = new ArrayList<>();
         Long sum = 0L;
+
+        if(list.isEmpty())
+            return ResponseEntity.status(400).build();
+
         for(ShoppingCartEntity shoppingCartEntity : list)  {
             ids.add(shoppingCartEntity.getStorageElementEntity());
             sum += shoppingCartEntity.getStorageElementEntity().getPrice();
@@ -76,6 +80,9 @@ public class CartController {
         } else {
             return ResponseEntity.status(400).build();
         }
+
+        cartEntityRepository.deleteAllByCustomerId_Id(listById.get().getId());
+
         return ResponseEntity.ok().build();
     }
 }

@@ -14,6 +14,8 @@ import java.util.Optional;
 @Repository
 public interface ShoppingCartEntityRepository extends JpaRepository<ShoppingCartEntity, Long> {
     List<ShoppingCartEntity> findAllByCustomerId_Id(Long id);
+
+    void deleteAllByCustomerId_Id(Long id);
     Long countByCustomerId_Id(@NotNull Long id);
     void deleteByStorageElementEntity_Id(Long id);
 }
