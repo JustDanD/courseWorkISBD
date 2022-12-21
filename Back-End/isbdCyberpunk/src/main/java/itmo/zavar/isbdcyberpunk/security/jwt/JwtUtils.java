@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.WebUtils;
 
@@ -27,22 +28,35 @@ public class JwtUtils {
     @Value("${zavar.app.jwtCookieName}")
     private String jwtCookie;
 
-    public String getJwtFromCookies(HttpServletRequest request) {
-        Cookie cookie = WebUtils.getCookie(request, jwtCookie);
-        if (cookie != null) {
-            return cookie.getValue();
-        } else {
-            return null;
-        }
-    }
+//    public String getJwtFromCookies(HttpServletRequest request) {
+//        Cookie cookie = WebUtils.getCookie(request, jwtCookie);
+//        if (cookie != null) {
+//            return cookie.getValue();
+//        } else {
+//            return null;
+//        }
+//    }
+//
+//    public ResponseCookie generateJwtCookie(UserDetailsImpl userPrincipal) {
+//        String jwt = generateTokenFromUsername(userPrincipal.id());
+//        return ResponseCookie.from(jwtCookie, jwt).path("/").maxAge(24 * 60 * 60).sameSite("Lax").httpOnly(true).build();
+//    }
+//
+//    public ResponseCookie getCleanJwtCookie() {
+//        return ResponseCookie.from(jwtCookie).path("/").build();
+//    }
+//
+//    public String getIdFromJwtToken(String token) {
+//        return Jwts.parserBuilder().setSigningKey(Keys.hmacShaKeyFor(jwtSecret.getBytes())).build().parseClaimsJws(token).getBody().getSubject();
+//    }
 
-    public ResponseCookie generateJwtCookie(UserDetailsImpl userPrincipal) {
-        String jwt = generateTokenFromUsername(userPrincipal.id());
-        return ResponseCookie.from(jwtCookie, jwt).path("/").maxAge(24 * 60 * 60).httpOnly(true).build();
-    }
-
-    public ResponseCookie getCleanJwtCookie() {
-        return ResponseCookie.from(jwtCookie).path("/").build();
+    public String generateTokenFromUsername(Long id) {
+        return Jwts.builder()
+                .setSubject(String.valueOf(id))
+                .setIssuedAt(new Date())
+                .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
+                .signWith(Keys.hmacShaKeyFor(jwtSecret.getBytes()), SignatureAlgorithm.HS256)
+                .compact();
     }
 
     public String getIdFromJwtToken(String token) {
@@ -66,14 +80,5 @@ public class JwtUtils {
         }
 
         return false;
-    }
-
-    public String generateTokenFromUsername(Long id) {
-        return Jwts.builder()
-                .setSubject(String.valueOf(id))
-                .setIssuedAt(new Date())
-                .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
-                .signWith(Keys.hmacShaKeyFor(jwtSecret.getBytes()), SignatureAlgorithm.HS256)
-                .compact();
     }
 }

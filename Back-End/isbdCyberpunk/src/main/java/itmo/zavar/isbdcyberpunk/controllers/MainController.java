@@ -11,10 +11,7 @@ import itmo.zavar.isbdcyberpunk.models.user.info.BillingEntity;
 import itmo.zavar.isbdcyberpunk.models.user.list.ListCustomersEntity;
 import itmo.zavar.isbdcyberpunk.payload.request.AddToCartRequest;
 import itmo.zavar.isbdcyberpunk.payload.request.GetCyberwaresRequest;
-import itmo.zavar.isbdcyberpunk.payload.response.CartSizeResponse;
-import itmo.zavar.isbdcyberpunk.payload.response.GetCyberwareDetailsResponse;
-import itmo.zavar.isbdcyberpunk.payload.response.GetCyberwaresResponse;
-import itmo.zavar.isbdcyberpunk.payload.response.UserFullDetailsResponse;
+import itmo.zavar.isbdcyberpunk.payload.response.*;
 import itmo.zavar.isbdcyberpunk.repository.*;
 import itmo.zavar.isbdcyberpunk.security.services.UserDetailsImpl;
 import jakarta.validation.Valid;
@@ -25,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -63,35 +61,37 @@ public class MainController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getUserFullDetails() {
         UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Optional<UserEntity> byId = userRepository.findById(principal.id());
+        Optional<UserEntity> optionalUserEntity = userRepository.findById(principal.id());
         UserFullDetailsResponse userFullDetails;
-        if (byId.isPresent()) {
-            UserEntity userEntity = byId.get();
+        if (optionalUserEntity.isPresent()) {
+            UserEntity userEntity = optionalUserEntity.get();
             Optional<ListCustomersEntity> listById = customersEntityRepository.findByUserId_Id(userEntity.getId());
             if (listById.isPresent()) {
                 BillingEntity billing = listById.get().getBillingId();
                 userFullDetails = new UserFullDetailsResponse(userEntity.getUsername(), userEntity.getRole().getName().ordinal(), billing.getSum());
                 return ResponseEntity.ok(userFullDetails);
             } else {
-                return ResponseEntity.status(HttpStatusCode.valueOf(400)).build();
+                return ResponseEntity.status(400).body(new MessageResponse("Пользователь не найден в таблице покупателей"));
             }
         } else {
-            return ResponseEntity.status(HttpStatusCode.valueOf(400)).build();
+            return ResponseEntity.status(400).body(new MessageResponse("Пользователь не найден"));
         }
     }
 
     @GetMapping("/getCartSize")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<CartSizeResponse> getCartSize() {
+    public ResponseEntity<?> getCartSize() {
         UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Optional<ListCustomersEntity> listById = customersEntityRepository.findByUserId_Id(principal.id());
-        Long count = cartEntityRepository.countByCustomerId_Id(listById.get().getId());
+        Optional<ListCustomersEntity> customersEntity = customersEntityRepository.findByUserId_Id(principal.id());
+        if(customersEntity.isEmpty())
+            return ResponseEntity.status(400).body(new MessageResponse("Пользователь не найден в таблице покупателей"));
+        Long count = cartEntityRepository.countByCustomerId_Id(customersEntity.get().getId());
         return ResponseEntity.ok(new CartSizeResponse(count));
     }
 
-    @GetMapping("/getCyberwares")
+    @PostMapping("/getCyberwares")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<GetCyberwaresResponse>> getCyberwares(@Valid @RequestBody GetCyberwaresRequest getCyberwaresRequest) {
+    public ResponseEntity<?> getCyberwares(@Valid @RequestBody GetCyberwaresRequest getCyberwaresRequest) {
         UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         List<CyberwareEntity> all = cyberwareEntityRepository.findAll().stream().skip(getCyberwaresRequest.getStartPosition()).toList();
 
@@ -130,10 +130,10 @@ public class MainController {
                     SellingPointEntity sellingPointEntity = optionalSellingPointEntity.get();
                     output.add(new GetCyberwaresResponse(sellingPointEntity.getId(), sellingPointEntity.getName(), entity, storageElementEntity.getRating(), storageElementEntity.getCount(), storageElementEntity.getPrice()));
                 } else {
-                    return ResponseEntity.status(400).build();
+                    return ResponseEntity.status(400).body(new MessageResponse("Точка продажи не найдена"));
                 }
             } else {
-                return ResponseEntity.status(400).build();
+                return ResponseEntity.status(400).body(new MessageResponse("Позиция на складе не найдена"));
             }
         }
 
@@ -146,16 +146,22 @@ public class MainController {
     public ResponseEntity<?> addToCart(@Valid @RequestBody AddToCartRequest addToCartRequest) {
         UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        Optional<ListCustomersEntity> listById = customersEntityRepository.findByUserId_Id(principal.id());
+        Optional<ListCustomersEntity> customersEntity = customersEntityRepository.findByUserId_Id(principal.id());
         Optional<StorageElementEntity> storageElementById = storageElementEntityRepository.findById(addToCartRequest.getStorageElementId());
-        if (listById.isPresent() && storageElementById.isPresent()) {
-            ShoppingCartEntity cartEntity = new ShoppingCartEntity(listById.get(), storageElementById.get());
+        if (customersEntity.isPresent() && storageElementById.isPresent()) {
+            ShoppingCartEntity cartEntity = new ShoppingCartEntity(customersEntity.get(), storageElementById.get());
             cartEntityRepository.save(cartEntity);
         } else {
-            return ResponseEntity.status(404).build();
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            return ResponseEntity.status(400).body(new MessageResponse("Пользователь или позиция на складе не найден в таблице покупателей"));
         }
 
-        Long count = cartEntityRepository.countByCustomerId_Id(listById.get().getId());
+        Long count = cartEntityRepository.countByCustomerId_Id(customersEntity.get().getId());
         return ResponseEntity.ok(new CartSizeResponse(count));
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<?> handleException(Exception e) {
+        return ResponseEntity.status(HttpStatusCode.valueOf(400)).body(new MessageResponse(e.getMessage()));
     }
 }

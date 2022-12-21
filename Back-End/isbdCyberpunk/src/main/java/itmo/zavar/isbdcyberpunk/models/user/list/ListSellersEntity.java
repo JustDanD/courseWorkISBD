@@ -31,4 +31,9 @@ public class ListSellersEntity {
     @ManyToOne
     @JoinColumn(name = "billing_id")
     private BillingEntity billingId;
+
+    public ListSellersEntity(UserEntity userId, BillingEntity billingId) {
+        this.userId = userId;
+        this.billingId = billingId;
+    }
 }

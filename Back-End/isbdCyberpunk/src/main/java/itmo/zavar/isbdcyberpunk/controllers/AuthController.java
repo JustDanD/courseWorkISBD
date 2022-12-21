@@ -5,13 +5,12 @@ import itmo.zavar.isbdcyberpunk.models.user.UserEntity;
 import itmo.zavar.isbdcyberpunk.models.user.UserRole;
 import itmo.zavar.isbdcyberpunk.models.user.info.BillingEntity;
 import itmo.zavar.isbdcyberpunk.models.user.list.ListCustomersEntity;
+import itmo.zavar.isbdcyberpunk.models.user.list.ListSellersEntity;
 import itmo.zavar.isbdcyberpunk.payload.request.RegisterRequest;
 import itmo.zavar.isbdcyberpunk.payload.request.SignInRequest;
+import itmo.zavar.isbdcyberpunk.payload.response.JwtResponse;
 import itmo.zavar.isbdcyberpunk.payload.response.MessageResponse;
-import itmo.zavar.isbdcyberpunk.repository.BillingEntityRepository;
-import itmo.zavar.isbdcyberpunk.repository.ListCustomersEntityRepository;
-import itmo.zavar.isbdcyberpunk.repository.RoleRepository;
-import itmo.zavar.isbdcyberpunk.repository.UserRepository;
+import itmo.zavar.isbdcyberpunk.repository.*;
 import itmo.zavar.isbdcyberpunk.security.jwt.JwtUtils;
 import itmo.zavar.isbdcyberpunk.security.services.UserDetailsImpl;
 import jakarta.validation.Valid;
@@ -43,6 +42,9 @@ public class AuthController {
     private ListCustomersEntityRepository customersEntityRepository;
 
     @Autowired
+    private ListSellersEntityRepository listSellersEntityRepository;
+
+    @Autowired
     private BillingEntityRepository billingEntityRepository;
 
     @Autowired
@@ -62,9 +64,10 @@ public class AuthController {
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(userDetails);
+        //ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(userDetails);
+        String jwt = jwtUtils.generateTokenFromUsername(userDetails.id());
 
-        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, jwtCookie.toString()).build();
+        return ResponseEntity.ok().header(HttpHeaders.AUTHORIZATION, jwt).body(new JwtResponse(jwt));
     }
 
     @PostMapping("/register")
@@ -72,46 +75,43 @@ public class AuthController {
     public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequest registerRequest) {
 
         if (userRepository.existsByUsername(registerRequest.getUsername()))
-            return ResponseEntity.status(HttpStatusCode.valueOf(400)).body(new MessageResponse("Error: Username is already taken!"));
+            return ResponseEntity.status(HttpStatusCode.valueOf(400)).body(new MessageResponse("Имя пользователя уже занято"));
 
         UserEntity userEntity = new UserEntity(registerRequest.getUsername(), encoder.encode(registerRequest.getPassword()));
 
         RoleEntity roleEntity;
 
+        //TODO list
         try {
             UserRole userRole = UserRole.valueOf(registerRequest.getRole());
             roleEntity = roleRepository.findByName(userRole)
-                    .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                    .orElseThrow(() -> new RuntimeException("Роль не найдена"));
             userEntity.setRole(roleEntity);
         } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Error: Role is not found.");
+            throw new RuntimeException("Роль не найдена");
         } catch (NullPointerException e) {
             roleEntity = roleRepository.findByName(UserRole.ROLE_CUSTOMER)
-                    .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                    .orElseThrow(() -> new RuntimeException("Роль не найдена"));
             userEntity.setRole(roleEntity);
         }
 
         userRepository.save(userEntity);
-        BillingEntity billing = new BillingEntity();
-        billing.setSum(40000L);
-        billingEntityRepository.save(billing);
-        ListCustomersEntity listCustomersEntity = new ListCustomersEntity(userEntity, billing);
-        customersEntityRepository.save(listCustomersEntity);
+
+        if(roleEntity.getName() == UserRole.ROLE_CUSTOMER) {
+            BillingEntity billing = new BillingEntity();
+            billing.setSum(4000000L);
+            billingEntityRepository.save(billing);
+            ListCustomersEntity listCustomersEntity = new ListCustomersEntity(userEntity, billing);
+            customersEntityRepository.save(listCustomersEntity);
+        } else if(roleEntity.getName() == UserRole.ROLE_SELLER) {
+            BillingEntity billing = new BillingEntity();
+            billing.setSum(10000000L);
+            billingEntityRepository.save(billing);
+            ListSellersEntity listSellersEntity = new ListSellersEntity(userEntity, billing);
+            listSellersEntityRepository.save(listSellersEntity);
+        }
 
         return ResponseEntity.ok().build();
-    }
-
-    @PostMapping("/logOut")
-    public ResponseEntity<?> logoutUser() {
-        if (SecurityContextHolder.getContext().getAuthentication() != null &&
-                SecurityContextHolder.getContext().getAuthentication().isAuthenticated() &&
-                !(SecurityContextHolder.getContext().getAuthentication()
-                        instanceof AnonymousAuthenticationToken)) {
-            ResponseCookie cookie = jwtUtils.getCleanJwtCookie();
-            return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).build();
-        } else {
-            return ResponseEntity.status(HttpStatusCode.valueOf(401)).build();
-        }
     }
 
     @GetMapping("/isAuthenticated")
