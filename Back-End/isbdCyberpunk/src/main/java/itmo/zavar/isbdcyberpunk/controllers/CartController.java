@@ -8,6 +8,7 @@ import itmo.zavar.isbdcyberpunk.models.shop.order.OrderStructureEntity;
 import itmo.zavar.isbdcyberpunk.models.shop.storage.SellingPointEntity;
 import itmo.zavar.isbdcyberpunk.models.shop.storage.StorageElementEntity;
 import itmo.zavar.isbdcyberpunk.models.user.info.BillingEntity;
+import itmo.zavar.isbdcyberpunk.models.user.info.ListOwnedCyberwaresEntity;
 import itmo.zavar.isbdcyberpunk.models.user.list.ListCustomersEntity;
 import itmo.zavar.isbdcyberpunk.payload.request.RemoveFromCartRequest;
 import itmo.zavar.isbdcyberpunk.payload.response.CartContentResponse;
@@ -59,6 +60,9 @@ public class CartController {
 
     @Autowired
     private SellingPointEntityRepository sellingPointEntityRepository;
+
+    @Autowired
+    private ListOwnedCyberwaresEntityRepository listOwnedCyberwaresEntityRepository;
 
     @PostMapping("/removeFromCart")
     @PreAuthorize("isAuthenticated()")
@@ -135,6 +139,11 @@ public class CartController {
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return ResponseEntity.status(400).build();
         }
+
+        for (StorageElementEntity entity : ids) {
+            listOwnedCyberwaresEntityRepository.save(new ListOwnedCyberwaresEntity(customerById.get(), entity.getCyberwareId(), false));
+        }
+
         BillingEntity billing = customerById.get().getBillingId();
 
         if(billing.getSum() < sum) {

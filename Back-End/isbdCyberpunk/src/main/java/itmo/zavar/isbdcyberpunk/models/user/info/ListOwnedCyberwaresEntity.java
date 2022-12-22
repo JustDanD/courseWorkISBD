@@ -36,4 +36,9 @@ public class ListOwnedCyberwaresEntity {
     @NotNull
     private Boolean installed;
 
+    public ListOwnedCyberwaresEntity(ListCustomersEntity customerId, CyberwareEntity cyberwareId, Boolean installed) {
+        this.customerId = customerId;
+        this.cyberwareId = cyberwareId;
+        this.installed = installed;
+    }
 }
