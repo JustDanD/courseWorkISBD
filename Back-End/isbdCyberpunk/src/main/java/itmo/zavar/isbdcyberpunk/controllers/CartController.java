@@ -1,5 +1,6 @@
 package itmo.zavar.isbdcyberpunk.controllers;
 
+import itmo.zavar.isbdcyberpunk.models.cyberware.CyberwareEntity;
 import itmo.zavar.isbdcyberpunk.models.shop.ShoppingCartEntity;
 import itmo.zavar.isbdcyberpunk.models.shop.order.OrderEntity;
 import itmo.zavar.isbdcyberpunk.models.shop.order.OrderStatusEntity;
@@ -8,6 +9,7 @@ import itmo.zavar.isbdcyberpunk.models.shop.storage.StorageElementEntity;
 import itmo.zavar.isbdcyberpunk.models.user.info.BillingEntity;
 import itmo.zavar.isbdcyberpunk.models.user.list.ListCustomersEntity;
 import itmo.zavar.isbdcyberpunk.payload.request.RemoveFromCartRequest;
+import itmo.zavar.isbdcyberpunk.payload.response.CartContentResponse;
 import itmo.zavar.isbdcyberpunk.payload.response.MessageResponse;
 import itmo.zavar.isbdcyberpunk.repository.*;
 import itmo.zavar.isbdcyberpunk.security.services.UserDetailsImpl;
@@ -59,6 +61,26 @@ public class CartController {
         UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         cartEntityRepository.deleteByStorageElementEntity_Id(removeFromCartRequest.getStorageElementId());
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/getCartContent")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> getCartContent() {
+        UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Optional<ListCustomersEntity> customerById = customersEntityRepository.findByUserId_Id(principal.id());
+        if(customerById.isEmpty())
+            return ResponseEntity.status(400).body(new MessageResponse("Пользователь не найден"));
+        List<ShoppingCartEntity> cart = cartEntityRepository.findAllByCustomerId_Id(customerById.get().getId());
+        if(cart.isEmpty()) {
+            return ResponseEntity.status(400).body(new MessageResponse("Корзина пуста"));
+        }
+        Long sum = 0L;
+        List<CyberwareEntity> cyberwareEntities = cart.stream().map(shoppingCartEntity -> shoppingCartEntity.getStorageElementEntity().getCyberwareId()).toList();
+        for(ShoppingCartEntity shoppingCartEntity : cart)  {
+            sum += shoppingCartEntity.getStorageElementEntity().getPrice();
+        }
+
+        return ResponseEntity.ok().body(new CartContentResponse(cyberwareEntities, sum));
     }
 
     @PostMapping("/confirmOrder")
