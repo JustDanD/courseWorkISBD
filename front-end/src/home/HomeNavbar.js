@@ -124,7 +124,7 @@ export let HomeNavbar = (props) => {
                         color="inherit"
                     >
                         <Avatar
-                            onClick={handleMenu}
+                            onClick={() => {handleMenu()}}
                             style={{
                                 marginLeft: '15px'
                             }}

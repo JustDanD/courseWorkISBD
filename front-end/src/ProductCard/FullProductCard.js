@@ -244,9 +244,15 @@ export let FullProductCard = (props) => {
                     <Typography variant="h5" color='secondary'>
                         {details.price} <CurrencyBitcoin color='primary' fontSize="inherit"/>
                     </Typography>
-                    <Typography variant="subtitle1" color='secondary'>
-                        Количество: {details.count}
-                    </Typography>
+                    {
+                        props.isProfile ?
+                            <Typography variant="subtitle1" color='secondary'>
+                                Статус: {props.isInstalled ?  "Установлен" : "Не установлен"}
+                            </Typography> :
+                            <Typography variant="subtitle1" color='secondary'>
+                                Количество: {details.count}
+                            </Typography>
+                    }
                     {props.isCart ? null :
                         <Button size="large" variant="contained" color='secondary'
                                 onClick={addToCart}>Купить</Button>}
