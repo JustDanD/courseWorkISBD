@@ -8,6 +8,7 @@ import itmo.zavar.isbdcyberpunk.payload.request.AddReviewRequest;
 import itmo.zavar.isbdcyberpunk.payload.request.GetCyberwareDetailsRequest;
 import itmo.zavar.isbdcyberpunk.payload.request.RemoveFromCartRequest;
 import itmo.zavar.isbdcyberpunk.payload.response.GetCyberwareDetailsResponse;
+import itmo.zavar.isbdcyberpunk.payload.response.GetReviewResponse;
 import itmo.zavar.isbdcyberpunk.payload.response.MessageResponse;
 import itmo.zavar.isbdcyberpunk.repository.CyberwareEntityRepository;
 import itmo.zavar.isbdcyberpunk.repository.ListCustomersEntityRepository;
@@ -23,12 +24,13 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
-@RequestMapping("/cyberware")
+@RequestMapping("/api/cyberware")
 public class CyberwareController {
 
     @Autowired
@@ -46,10 +48,15 @@ public class CyberwareController {
     @PostMapping("/getReviews")
     @PreAuthorize("isAuthenticated()")
     @Transactional
-    public ResponseEntity<List<ReviewEntity>> getReviews(@Valid @RequestBody RemoveFromCartRequest removeFromCartRequest) {
+    public ResponseEntity<List<GetReviewResponse>> getReviews(@Valid @RequestBody RemoveFromCartRequest getReviewRequest) {
         UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        List<ReviewEntity> list = reviewEntityRepository.findByStorageElement_Id(removeFromCartRequest.getStorageElementId());
-        return ResponseEntity.ok(list);
+        List<ReviewEntity> list = reviewEntityRepository.findByStorageElement_Id(getReviewRequest.getStorageElementId());
+        List<GetReviewResponse> output = new ArrayList<>();
+        list.forEach(reviewEntity -> {
+            output.add(new GetReviewResponse(reviewEntity.getListCustomersEntity().getId(), reviewEntity.getListCustomersEntity().getUserId().getUsername(),
+                    reviewEntity.getReview(), reviewEntity.getRating()));
+        });
+        return ResponseEntity.ok(output);
     }
 
     @PostMapping("/postReview")

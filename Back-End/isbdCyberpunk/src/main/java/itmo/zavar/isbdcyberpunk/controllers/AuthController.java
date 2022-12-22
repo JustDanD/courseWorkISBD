@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.*;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 public class AuthController {
     @Autowired
     private AuthenticationManager authenticationManager;
@@ -81,7 +81,6 @@ public class AuthController {
 
         RoleEntity roleEntity;
 
-        //TODO list
         try {
             UserRole userRole = UserRole.valueOf(registerRequest.getRole());
             roleEntity = roleRepository.findByName(userRole)

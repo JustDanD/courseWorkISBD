@@ -31,7 +31,7 @@ import java.util.Optional;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
-@RequestMapping("/main")
+@RequestMapping("/api/main")
 public class MainController {
     @Autowired
     private ListCustomersEntityRepository customersEntityRepository;

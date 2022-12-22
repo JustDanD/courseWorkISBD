@@ -8,4 +8,5 @@ import java.util.Optional;
 
 public interface StorageElementEntityRepository extends JpaRepository<StorageElementEntity, Long> {
     Optional<StorageElementEntity> findByCyberwareId(CyberwareEntity entity);
+    Optional<StorageElementEntity> findByStorageId_Id(Long id);
 }
