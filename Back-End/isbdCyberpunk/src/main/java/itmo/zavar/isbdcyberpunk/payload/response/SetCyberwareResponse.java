@@ -8,6 +8,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class SetCyberwareResponse {
-    private Long newId;
-    private Long oldId;
+    private Long cyberwareId;
+    private boolean installed;
 }

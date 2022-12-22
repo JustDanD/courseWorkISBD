@@ -9,5 +9,6 @@ import java.util.Optional;
 
 public interface ListOwnedCyberwaresEntityRepository extends JpaRepository<ListOwnedCyberwaresEntity, Long> {
     Optional<ListOwnedCyberwaresEntity> findByCustomerId_IdAndCyberwareId_Id(Long customerId, Long cyberwareId);
+    Boolean existsByCustomerId_IdAndCyberwareId_Id(Long customerId, Long cyberwareId);
     List<ListOwnedCyberwaresEntity> findAllByCustomerId_Id(Long id);
 }

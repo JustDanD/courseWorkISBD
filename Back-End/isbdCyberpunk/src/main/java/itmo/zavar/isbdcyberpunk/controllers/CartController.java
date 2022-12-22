@@ -141,6 +141,11 @@ public class CartController {
         }
 
         for (StorageElementEntity entity : ids) {
+            boolean has = listOwnedCyberwaresEntityRepository.existsByCustomerId_IdAndCyberwareId_Id(customer.get().getId(), entity.getCyberwareId().getId());
+            if(has) {
+                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                return ResponseEntity.status(400).body(new MessageResponse("У вас уже есть этот имплант: " + entity.getCyberwareId().getName()));
+            }
             listOwnedCyberwaresEntityRepository.save(new ListOwnedCyberwaresEntity(customerById.get(), entity.getCyberwareId(), false));
         }
 

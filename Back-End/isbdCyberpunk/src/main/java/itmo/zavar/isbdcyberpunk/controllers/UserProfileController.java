@@ -6,14 +6,12 @@ import itmo.zavar.isbdcyberpunk.models.shop.storage.SellingPointEntity;
 import itmo.zavar.isbdcyberpunk.models.shop.storage.StorageElementEntity;
 import itmo.zavar.isbdcyberpunk.models.user.info.ListOwnedCyberwaresEntity;
 import itmo.zavar.isbdcyberpunk.models.user.list.ListCustomersEntity;
-import itmo.zavar.isbdcyberpunk.payload.response.GetCyberwaresResponse;
-import itmo.zavar.isbdcyberpunk.payload.response.MessageResponse;
-import itmo.zavar.isbdcyberpunk.payload.response.OrderHistoryResponse;
-import itmo.zavar.isbdcyberpunk.payload.response.SetCyberwareResponse;
+import itmo.zavar.isbdcyberpunk.payload.response.*;
 import itmo.zavar.isbdcyberpunk.repository.*;
 import itmo.zavar.isbdcyberpunk.security.services.UserDetailsImpl;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -60,15 +58,10 @@ public class UserProfileController {
     public ResponseEntity<?> setCyberware(@Valid @RequestBody SetCyberwareResponse setCyberwareResponse) {
         UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Optional<ListCustomersEntity> listById = customersEntityRepository.findByUserId_Id(principal.id());
-        Optional<ListOwnedCyberwaresEntity> oldCyberware = listOwnedCyberwaresEntityRepository.findByCustomerId_IdAndCyberwareId_Id(listById.get().getId(), setCyberwareResponse.getOldId());
-        Optional<ListOwnedCyberwaresEntity> newCyberware = listOwnedCyberwaresEntityRepository.findByCustomerId_IdAndCyberwareId_Id(listById.get().getId(), setCyberwareResponse.getNewId());
-        if (oldCyberware.isPresent() && newCyberware.isPresent()) {
-            ListOwnedCyberwaresEntity listOwnedCyberwaresEntity = oldCyberware.get();
-            listOwnedCyberwaresEntity.setInstalled(false);
-            listOwnedCyberwaresEntityRepository.save(listOwnedCyberwaresEntity);
-
-            listOwnedCyberwaresEntity = newCyberware.get();
-            listOwnedCyberwaresEntity.setInstalled(true);
+        Optional<ListOwnedCyberwaresEntity> cyberware = listOwnedCyberwaresEntityRepository.findByCustomerId_IdAndCyberwareId_Id(listById.get().getId(), setCyberwareResponse.getCyberwareId());
+        if (cyberware.isPresent()) {
+            ListOwnedCyberwaresEntity listOwnedCyberwaresEntity = cyberware.get();
+            listOwnedCyberwaresEntity.setInstalled(setCyberwareResponse.isInstalled());
             listOwnedCyberwaresEntityRepository.save(listOwnedCyberwaresEntity);
         } else {
             return ResponseEntity.status(400).build();
@@ -83,7 +76,7 @@ public class UserProfileController {
         Optional<ListCustomersEntity> listById = customersEntityRepository.findByUserId_Id(principal.id());
         List<ListOwnedCyberwaresEntity> ownedCyberwaresEntityList = listOwnedCyberwaresEntityRepository.findAllByCustomerId_Id(listById.get().getId());
         List<CyberwareEntity> cyberwareEntities = ownedCyberwaresEntityList.stream().map(ListOwnedCyberwaresEntity::getCyberwareId).toList();
-        List<GetCyberwaresResponse> output = new ArrayList<>();
+        List<GetOwnedCyberwaresResponse> output = new ArrayList<>();
 
         for (CyberwareEntity entity : cyberwareEntities) {
             Optional<StorageElementEntity> optionalStorageElement = storageElementEntityRepository.findByCyberwareId(entity);
@@ -92,7 +85,11 @@ public class UserProfileController {
                 Optional<SellingPointEntity> optionalSellingPointEntity = sellingPointEntityRepository.findByStorageEntity_Id(storageElementEntity.getStorageId().getId());
                 if (optionalSellingPointEntity.isPresent()) {
                     SellingPointEntity sellingPointEntity = optionalSellingPointEntity.get();
-                    output.add(new GetCyberwaresResponse(sellingPointEntity.getId(), sellingPointEntity.getName(), entity, storageElementEntity.getRating(), storageElementEntity.getCount(), storageElementEntity.getPrice(), storageElementEntity.getId()));
+                    Optional<ListOwnedCyberwaresEntity> listOwnedCyberwaresEntity = listOwnedCyberwaresEntityRepository.findByCustomerId_IdAndCyberwareId_Id(listById.get().getId(), entity.getId());
+                    if(listOwnedCyberwaresEntity.isEmpty())
+                        return ResponseEntity.status(400).body(new MessageResponse("Имплант не найден в списке инвентаря"));
+                    output.add(new GetOwnedCyberwaresResponse(sellingPointEntity.getId(), sellingPointEntity.getName(), entity, storageElementEntity.getRating(),
+                            storageElementEntity.getCount(), storageElementEntity.getPrice(), storageElementEntity.getId(), listOwnedCyberwaresEntity.get().getInstalled()));
                 } else {
                     return ResponseEntity.status(400).body(new MessageResponse("Точка продажи не найдена"));
                 }
@@ -102,5 +99,10 @@ public class UserProfileController {
         }
 
         return ResponseEntity.ok(output);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<?> handleException(Exception e) {
+        return ResponseEntity.status(HttpStatusCode.valueOf(400)).body(new MessageResponse(e.getMessage()));
     }
 }
