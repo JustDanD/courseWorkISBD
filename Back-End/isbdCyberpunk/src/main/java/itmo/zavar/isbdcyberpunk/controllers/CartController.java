@@ -13,6 +13,7 @@ import itmo.zavar.isbdcyberpunk.payload.response.CartContentResponse;
 import itmo.zavar.isbdcyberpunk.payload.response.MessageResponse;
 import itmo.zavar.isbdcyberpunk.repository.*;
 import itmo.zavar.isbdcyberpunk.security.services.UserDetailsImpl;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -57,7 +58,7 @@ public class CartController {
     @PostMapping("/removeFromCart")
     @PreAuthorize("isAuthenticated()")
     @Transactional
-    public ResponseEntity<?> setCyberware(RemoveFromCartRequest removeFromCartRequest) {
+    public ResponseEntity<?> removeFromCart(@Valid @RequestBody RemoveFromCartRequest removeFromCartRequest) {
         UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         cartEntityRepository.deleteByStorageElementEntity_Id(removeFromCartRequest.getStorageElementId());
         return ResponseEntity.ok().build();

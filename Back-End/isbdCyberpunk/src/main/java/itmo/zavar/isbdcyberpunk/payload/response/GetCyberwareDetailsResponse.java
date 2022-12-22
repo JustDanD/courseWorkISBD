@@ -11,4 +11,5 @@ import lombok.Setter;
 public class GetCyberwareDetailsResponse {
     private CyberwareEntity cyberwareEntity;
     private Double rating;
+    private Long storageElementId;
 }

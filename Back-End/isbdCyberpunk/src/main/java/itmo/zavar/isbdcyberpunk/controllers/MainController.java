@@ -128,7 +128,7 @@ public class MainController {
                 Optional<SellingPointEntity> optionalSellingPointEntity = sellingPointEntityRepository.findByStorageEntity_Id(storageElementEntity.getStorageId().getId());
                 if (optionalSellingPointEntity.isPresent()) {
                     SellingPointEntity sellingPointEntity = optionalSellingPointEntity.get();
-                    output.add(new GetCyberwaresResponse(sellingPointEntity.getId(), sellingPointEntity.getName(), entity, storageElementEntity.getRating(), storageElementEntity.getCount(), storageElementEntity.getPrice()));
+                    output.add(new GetCyberwaresResponse(sellingPointEntity.getId(), sellingPointEntity.getName(), entity, storageElementEntity.getRating(), storageElementEntity.getCount(), storageElementEntity.getPrice(), storageElementEntity.getId()));
                 } else {
                     return ResponseEntity.status(400).body(new MessageResponse("Точка продажи не найдена"));
                 }

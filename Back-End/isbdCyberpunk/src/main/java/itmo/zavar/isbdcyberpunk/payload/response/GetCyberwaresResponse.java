@@ -19,5 +19,6 @@ public class GetCyberwaresResponse {
     private Double rating;
     private Long count;
     private Long price;
+    private Long storageElementId;
 }
 

@@ -14,6 +14,7 @@ import itmo.zavar.isbdcyberpunk.repository.ListCustomersEntityRepository;
 import itmo.zavar.isbdcyberpunk.repository.ReviewEntityRepository;
 import itmo.zavar.isbdcyberpunk.repository.StorageElementEntityRepository;
 import itmo.zavar.isbdcyberpunk.security.services.UserDetailsImpl;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -42,10 +43,10 @@ public class CyberwareController {
     @Autowired
     private CyberwareEntityRepository cyberwareEntityRepository;
 
-    @GetMapping("/getReviews")
+    @PostMapping("/getReviews")
     @PreAuthorize("isAuthenticated()")
     @Transactional
-    public ResponseEntity<List<ReviewEntity>> getReviews(RemoveFromCartRequest removeFromCartRequest) {
+    public ResponseEntity<List<ReviewEntity>> getReviews(@Valid @RequestBody RemoveFromCartRequest removeFromCartRequest) {
         UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         List<ReviewEntity> list = reviewEntityRepository.findByStorageElement_Id(removeFromCartRequest.getStorageElementId());
         return ResponseEntity.ok(list);
@@ -54,7 +55,7 @@ public class CyberwareController {
     @PostMapping("/postReview")
     @PreAuthorize("isAuthenticated()")
     @Transactional
-    public ResponseEntity<?> postReview(AddReviewRequest addReviewRequest) {
+    public ResponseEntity<?> postReview(@Valid @RequestBody AddReviewRequest addReviewRequest) {
         UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Optional<ListCustomersEntity> customer = customersEntityRepository.findByUserId_Id(principal.id());
         Optional<StorageElementEntity> element = storageElementEntityRepository.findById(addReviewRequest.getId());
@@ -68,16 +69,16 @@ public class CyberwareController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/getCyberwareDetails")
+    @PostMapping("/getCyberwareDetails")
     @PreAuthorize("isAuthenticated()")
     @Transactional
-    public ResponseEntity<?> getCyberwareDetails(GetCyberwareDetailsRequest getCyberwareDetailsRequest) {
+    public ResponseEntity<?> getCyberwareDetails(@Valid @RequestBody GetCyberwareDetailsRequest getCyberwareDetailsRequest) {
         Optional<StorageElementEntity> storageElementOp = storageElementEntityRepository.findById(getCyberwareDetailsRequest.getStorageElementId());
 
         if(storageElementOp.isPresent()) {
             StorageElementEntity storageElementEntity = storageElementOp.get();
             CyberwareEntity cyberware = storageElementEntity.getCyberwareId();
-            return ResponseEntity.ok(new GetCyberwareDetailsResponse(cyberware, storageElementEntity.getRating()));
+            return ResponseEntity.ok(new GetCyberwareDetailsResponse(cyberware, storageElementEntity.getRating(), storageElementEntity.getId()));
         } else {
             return ResponseEntity.status(400).body(new MessageResponse("Позиция не найдена"));
         }

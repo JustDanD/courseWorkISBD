@@ -10,6 +10,7 @@ import itmo.zavar.isbdcyberpunk.repository.ListCustomersEntityRepository;
 import itmo.zavar.isbdcyberpunk.repository.ListOwnedCyberwaresEntityRepository;
 import itmo.zavar.isbdcyberpunk.repository.OrderEntityRepository;
 import itmo.zavar.isbdcyberpunk.security.services.UserDetailsImpl;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -48,7 +49,7 @@ public class UserProfileController {
     @PostMapping("/setCyberware")
     @PreAuthorize("isAuthenticated()")
     @Transactional
-    public ResponseEntity<?> setCyberware(SetCyberwareResponse setCyberwareResponse) {
+    public ResponseEntity<?> setCyberware(@Valid @RequestBody SetCyberwareResponse setCyberwareResponse) {
         UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Optional<ListCustomersEntity> listById = customersEntityRepository.findByUserId_Id(principal.id());
         Optional<ListOwnedCyberwaresEntity> oldCyberware = listOwnedCyberwaresEntityRepository.findByCustomerId_IdAndCyberwareId_Id(listById.get().getId(), setCyberwareResponse.getOldId());
