@@ -12,7 +12,7 @@ export let SignIn = (props) => {
 
     useEffect(() => {
         $.ajax({
-            url: 'http://d-pimenov.ru/api/auth/isAuthenticated',
+            url: '/api/auth/isAuthenticated',
             type: 'GET',
             beforeSend: function (xhr) { xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.getItem("accessToken")); },
             async: true,
@@ -31,7 +31,7 @@ export let SignIn = (props) => {
             password: document.getElementById("password").value,
         }
         $.ajax({
-            url: 'http://d-pimenov.ru/api/auth/signIn',
+            url: '/api/auth/signIn',
             type: 'POST',
             credentials: 'include',
             async: true,

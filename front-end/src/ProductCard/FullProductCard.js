@@ -85,7 +85,7 @@ export let FullProductCard = (props) => {
 
     let addToCart = () => {
         $.ajax({
-            url: 'http://d-pimenov.ru/api/main/addToCart',
+            url: '/api/main/addToCart',
             type: 'POST',
             async: true,
             beforeSend: function (xhr) {
@@ -112,7 +112,7 @@ export let FullProductCard = (props) => {
 
     let getReviews = async () => {
         $.ajax({
-            url: 'http://d-pimenov.ru/api/cyberware/getReviews',
+            url: '/api/cyberware/getReviews',
             type: 'POST',
             async: true,
             beforeSend: function (xhr) {
@@ -136,7 +136,7 @@ export let FullProductCard = (props) => {
 
     let postReview = () => {
         $.ajax({
-            url: 'http://d-pimenov.ru/api/cyberware/postReview',
+            url: '/api/cyberware/postReview',
             type: 'POST',
             async: true,
             beforeSend: function (xhr) {

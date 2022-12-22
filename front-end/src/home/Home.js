@@ -30,7 +30,7 @@ export let Home = (props) => {
 
     let getUserDetails = async () => {
         $.ajax({
-            url: 'http://d-pimenov.ru/api/main/getUserDetails',
+            url: '/api/main/getUserDetails',
             type: 'GET',
             async: true,
             beforeSend: function (xhr) {
@@ -70,7 +70,7 @@ export let Home = (props) => {
         });
 
         $.ajax({
-            url: 'http://d-pimenov.ru/api/main/getCyberwares',
+            url: '/api/main/getCyberwares',
             type: 'POST',
             async: true,
             beforeSend: function (xhr) {

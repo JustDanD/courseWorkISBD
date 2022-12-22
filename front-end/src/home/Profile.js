@@ -19,7 +19,7 @@ export let Profile = (props) => {
     }
     let getOwnedCyberwares = async () => {
         $.ajax({
-            url: 'http://d-pimenov.ru/api/profile/getOwnedCyberwares',
+            url: '/api/profile/getOwnedCyberwares',
             type: 'GET',
             async: true,
             beforeSend: function (xhr) {

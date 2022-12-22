@@ -11,7 +11,7 @@ export let ProductCard = (props) => {
 
     let addToCart = () => {
         $.ajax({
-            url: 'http://d-pimenov.ru/api/main/addToCart',
+            url: '/api/main/addToCart',
             type: 'POST',
             async: true,
             beforeSend: function (xhr) {
@@ -34,7 +34,7 @@ export let ProductCard = (props) => {
 
     let removeFromCart = () => {
         $.ajax({
-            url: 'http://d-pimenov.ru/api/cart/removeFromCart',
+            url: '/api/cart/removeFromCart',
             type: 'POST',
             async: true,
             beforeSend: function (xhr) {
@@ -56,7 +56,7 @@ export let ProductCard = (props) => {
 
     let setStatus = () => {
         $.ajax({
-            url: 'http://d-pimenov.ru/api/profile/setCyberware',
+            url: '/api/profile/setCyberware',
             type: 'POST',
             async: true,
             beforeSend: function (xhr) {

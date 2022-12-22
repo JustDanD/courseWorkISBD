@@ -10,7 +10,7 @@ export let CartCard = (props) => {
 
     let getCart = async () => {
         $.ajax({
-            url: 'http://d-pimenov.ru/api/cart/getCartContent',
+            url: '/api/cart/getCartContent',
             type: 'GET',
             async: true,
             beforeSend: function (xhr) {
@@ -34,7 +34,7 @@ export let CartCard = (props) => {
 
     let approveOrder = () => {
         $.ajax({
-            url: 'http://d-pimenov.ru/api/cart/confirmOrder',
+            url: '/api/cart/confirmOrder',
             type: 'POST',
             async: true,
             beforeSend: function (xhr) {

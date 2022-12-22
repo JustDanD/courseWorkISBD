@@ -53,7 +53,7 @@ export let HomeNavbar = (props) => {
 
     let getCartSize = async () => {
         $.ajax({
-            url: 'http://d-pimenov.ru/api/main/getCartSize',
+            url: '/api/main/getCartSize',
             type: 'GET',
             async: true,
             beforeSend: function (xhr) {
