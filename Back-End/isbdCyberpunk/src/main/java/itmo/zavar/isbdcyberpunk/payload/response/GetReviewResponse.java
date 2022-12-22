@@ -8,6 +8,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class GetReviewResponse {
+    private Long reviewId;
     private Long authorId;
     private String author;
     private String review;

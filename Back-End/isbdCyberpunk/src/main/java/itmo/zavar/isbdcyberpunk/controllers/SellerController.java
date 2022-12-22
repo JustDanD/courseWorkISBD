@@ -1,25 +1,24 @@
 package itmo.zavar.isbdcyberpunk.controllers;
 
+import itmo.zavar.isbdcyberpunk.models.cyberware.CyberwareEntity;
 import itmo.zavar.isbdcyberpunk.models.shop.storage.SellingPointEntity;
+import itmo.zavar.isbdcyberpunk.models.shop.storage.StorageElementEntity;
 import itmo.zavar.isbdcyberpunk.models.shop.storage.StorageEntity;
 import itmo.zavar.isbdcyberpunk.models.user.UserEntity;
 import itmo.zavar.isbdcyberpunk.models.user.info.BillingEntity;
 import itmo.zavar.isbdcyberpunk.models.user.list.ListCustomersEntity;
 import itmo.zavar.isbdcyberpunk.models.user.list.ListSellersEntity;
-import itmo.zavar.isbdcyberpunk.payload.response.MessageResponse;
-import itmo.zavar.isbdcyberpunk.payload.response.SellerDetailsResponse;
-import itmo.zavar.isbdcyberpunk.payload.response.UserFullDetailsResponse;
+import itmo.zavar.isbdcyberpunk.payload.response.*;
 import itmo.zavar.isbdcyberpunk.repository.*;
 import itmo.zavar.isbdcyberpunk.security.services.UserDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -38,6 +37,12 @@ public class SellerController {
 
     @Autowired
     private SellingPointEntityRepository sellingPointEntityRepository;
+
+    @Autowired
+    private CyberwareEntityRepository cyberwareEntityRepository;
+
+    @Autowired
+    private StorageElementEntityRepository storageElementEntityRepository;
 
     @GetMapping("/getSellerDetails")
     @PreAuthorize("isAuthenticated()")
@@ -65,5 +70,41 @@ public class SellerController {
         } else {
             return ResponseEntity.status(400).body(new MessageResponse("Пользователь не найден"));
         }
+    }
+
+    @GetMapping("/getAllCyberwares")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> getAllCyberwares() {
+        List<CyberwareEntity> all = cyberwareEntityRepository.findAll();
+        return ResponseEntity.ok(all);
+    }
+
+    @GetMapping("/getStorageElements")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> getStorageElements() {
+        UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Optional<UserEntity> optionalUserEntity = userRepository.findById(principal.id());
+        if (optionalUserEntity.isPresent()) {
+            UserEntity userEntity = optionalUserEntity.get();
+            Optional<ListSellersEntity> listById = listSellersEntityRepository.findByUserId_Id(userEntity.getId());
+            if(listById.isPresent()) {
+                Optional<StorageEntity> storageEntityOptional = storageEntityRepository.findBySellerId_Id(listById.get().getId());
+                if(storageEntityOptional.isPresent()) {
+                    List<GetStorageElementsResponse> output = storageElementEntityRepository.findAllByStorageId_Id(storageEntityOptional.get().getId()).stream().map(storageElementEntity -> new GetStorageElementsResponse(storageElementEntity.getId(), storageElementEntity.getCyberwareId(), storageElementEntity.getCount(), storageElementEntity.getRating(), storageElementEntity.getPrice())).toList();
+                    return ResponseEntity.ok(output);
+                } else {
+                    return ResponseEntity.status(400).body(new MessageResponse("Хранилище не найдено"));
+                }
+            } else {
+                return ResponseEntity.status(400).body(new MessageResponse("Пользователь не найден в таблице продавцов"));
+            }
+        } else {
+            return ResponseEntity.status(400).body(new MessageResponse("Пользователь не найден"));
+        }
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<?> handleException(Exception e) {
+        return ResponseEntity.status(HttpStatusCode.valueOf(400)).body(new MessageResponse(e.getMessage()));
     }
 }

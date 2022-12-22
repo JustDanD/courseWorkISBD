@@ -53,7 +53,7 @@ public class CyberwareController {
         List<ReviewEntity> list = reviewEntityRepository.findByStorageElement_Id(getReviewRequest.getStorageElementId());
         List<GetReviewResponse> output = new ArrayList<>();
         list.forEach(reviewEntity -> {
-            output.add(new GetReviewResponse(reviewEntity.getListCustomersEntity().getId(), reviewEntity.getListCustomersEntity().getUserId().getUsername(),
+            output.add(new GetReviewResponse(reviewEntity.getId(), reviewEntity.getListCustomersEntity().getId(), reviewEntity.getListCustomersEntity().getUserId().getUsername(),
                     reviewEntity.getReview(), reviewEntity.getRating()));
         });
         return ResponseEntity.ok(output);
