@@ -206,7 +206,7 @@ public class SellerController {
         }
     }
 
-        @ExceptionHandler(Exception.class)
+    @ExceptionHandler(Exception.class)
     public ResponseEntity<?> handleException(Exception e) {
         return ResponseEntity.status(HttpStatusCode.valueOf(400)).body(new MessageResponse(e.getMessage()));
     }
