@@ -11,6 +11,6 @@ import java.util.List;
 @Getter
 @Setter
 public class CartContentResponse {
-    private List<CyberwareEntity> cyberwareEntities;
+    private List<GetCyberwaresResponse> cyberwares;
     private Long price;
 }

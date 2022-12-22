@@ -5,11 +5,13 @@ import itmo.zavar.isbdcyberpunk.models.shop.ShoppingCartEntity;
 import itmo.zavar.isbdcyberpunk.models.shop.order.OrderEntity;
 import itmo.zavar.isbdcyberpunk.models.shop.order.OrderStatusEntity;
 import itmo.zavar.isbdcyberpunk.models.shop.order.OrderStructureEntity;
+import itmo.zavar.isbdcyberpunk.models.shop.storage.SellingPointEntity;
 import itmo.zavar.isbdcyberpunk.models.shop.storage.StorageElementEntity;
 import itmo.zavar.isbdcyberpunk.models.user.info.BillingEntity;
 import itmo.zavar.isbdcyberpunk.models.user.list.ListCustomersEntity;
 import itmo.zavar.isbdcyberpunk.payload.request.RemoveFromCartRequest;
 import itmo.zavar.isbdcyberpunk.payload.response.CartContentResponse;
+import itmo.zavar.isbdcyberpunk.payload.response.GetCyberwaresResponse;
 import itmo.zavar.isbdcyberpunk.payload.response.MessageResponse;
 import itmo.zavar.isbdcyberpunk.repository.*;
 import itmo.zavar.isbdcyberpunk.security.services.UserDetailsImpl;
@@ -55,6 +57,9 @@ public class CartController {
     @Autowired
     private BillingEntityRepository billingEntityRepository;
 
+    @Autowired
+    private SellingPointEntityRepository sellingPointEntityRepository;
+
     @PostMapping("/removeFromCart")
     @PreAuthorize("isAuthenticated()")
     @Transactional
@@ -76,12 +81,19 @@ public class CartController {
             return ResponseEntity.status(400).body(new MessageResponse("Корзина пуста"));
         }
         Long sum = 0L;
-        List<CyberwareEntity> cyberwareEntities = cart.stream().map(shoppingCartEntity -> shoppingCartEntity.getStorageElementEntity().getCyberwareId()).toList();
+        List<GetCyberwaresResponse> output = new ArrayList<>();
+        //List<CyberwareEntity> cyberwareEntities = cart.stream().map(shoppingCartEntity -> shoppingCartEntity.getStorageElementEntity().getCyberwareId()).toList();
         for(ShoppingCartEntity shoppingCartEntity : cart)  {
             sum += shoppingCartEntity.getStorageElementEntity().getPrice();
+            Optional<SellingPointEntity> optionalSellingPointEntity = sellingPointEntityRepository.findByStorageEntity_Id(shoppingCartEntity.getStorageElementEntity().getStorageId().getId());
+            if(optionalSellingPointEntity.isEmpty())
+                return ResponseEntity.status(400).body(new MessageResponse("Точка продажи не найдена"));
+            output.add(new GetCyberwaresResponse(optionalSellingPointEntity.get().getId(), optionalSellingPointEntity.get().getName(),
+                    shoppingCartEntity.getStorageElementEntity().getCyberwareId(), shoppingCartEntity.getStorageElementEntity().getRating(),
+                    shoppingCartEntity.getStorageElementEntity().getCount(), shoppingCartEntity.getStorageElementEntity().getPrice(), shoppingCartEntity.getStorageElementEntity().getId()));
         }
 
-        return ResponseEntity.ok().body(new CartContentResponse(cyberwareEntities, sum));
+        return ResponseEntity.ok().body(new CartContentResponse(output, sum));
     }
 
     @PostMapping("/confirmOrder")

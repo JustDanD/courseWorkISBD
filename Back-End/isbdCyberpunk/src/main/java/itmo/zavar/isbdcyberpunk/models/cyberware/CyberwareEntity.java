@@ -21,8 +21,10 @@ public class CyberwareEntity {
     private String name;
 
     @NotBlank
+    @Column(length = 2048)
     private String url;
 
+    @Column(length = 2048)
     private String description;
 
     @NotNull
