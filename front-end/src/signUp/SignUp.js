@@ -13,8 +13,9 @@ export let SignUp = (props) => {
 
     useEffect(() => {
         $.ajax({
-            url: 'http://d-pimenov.ru/auth/isAuthenticated',
-            type: 'POST',
+            url: 'http://d-pimenov.ru/api/auth/isAuthenticated',
+            type: 'GET',
+            beforeSend: function (xhr) { xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.getItem("accessToken")); },
             async: true,
             success: (res) => {
                 navigate("/", {replace: true});
@@ -32,7 +33,7 @@ export let SignUp = (props) => {
             role: isSeller ? "ROLE_SELLER" : "ROLE_CUSTOMER"
         }
         $.ajax({
-            url: 'http://d-pimenov.ru/auth/register',
+            url: 'http://d-pimenov.ru/api/auth/register',
             type: 'POST',
             async: true,
             contentType: 'application/json; charset=utf-8',

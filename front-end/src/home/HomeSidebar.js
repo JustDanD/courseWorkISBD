@@ -2,7 +2,8 @@ import {
     Accordion,
     AccordionDetails,
     AccordionSummary,
-    Box, Button,
+    Box,
+    Button,
     Checkbox,
     Drawer,
     List,
@@ -87,11 +88,54 @@ const types = [
         id: "legs"
     }
 ];
-export let HomeSidebar = () => {
+export let HomeSidebar = (props) => {
     const [priceFrom, setPriceFrom] = useState(0);
-    const [priceTo, setPriceTo] = useState(150000);
+    const [priceTo, setPriceTo] = useState(0);
     const [typesFilter, setTypes] = useState([]);
     const [raritiesFilter, setRarities] = useState([]);
+
+    let handleFilters = () => {
+        let filters = {
+            startPrice: priceFrom,
+            endPrice: priceTo !== 0 ? priceTo : -1,
+            types: typesFilter,
+            rarity: raritiesFilter
+        }
+        props.setFilters(filters);
+    };
+
+    let resetFilters = () => {
+        setPriceFrom(0);
+        setPriceTo(0);
+        setTypes([]);
+        setRarities([]);
+        props.setFilters({
+            startPrice: 0,
+            endPrice: -1,
+            types: [],
+            rarity: []
+        });
+    }
+
+    let selectType = (key) => {
+        let newTypes = typesFilter.slice();
+        if (newTypes.includes(key)) {
+            newTypes.splice(newTypes.indexOf(key), 1);
+        } else {
+            newTypes.push(key);
+        }
+        setTypes(newTypes);
+    };
+
+    let selectRarity = (key) => {
+        let newRarities = raritiesFilter.slice();
+        if (newRarities.includes(key)) {
+            newRarities.splice(newRarities.indexOf(key), 1);
+        } else {
+            newRarities.push(key);
+        }
+        setRarities(newRarities);
+    };
 
     return (
         <Drawer
@@ -192,8 +236,14 @@ export let HomeSidebar = () => {
                             <List sx={{maxWidth: '250px'}}>
                                 {
                                     types.map((rarity) => (
-                                        <ListItem key={rarity.id} id={rarity.id} sx={{marginLeft: '-10%'}}>
-                                            <Checkbox/>
+                                        <ListItem key={rarity.name} id={rarity.name} sx={{marginLeft: '-10%'}}>
+                                            <Checkbox
+                                                id={rarity.name}
+                                                checked={typesFilter.includes(rarity.name)}
+                                                onChange={(e) => {
+                                                    selectType(e.target.id);
+                                                }}
+                                            />
                                             <ListItemText primary={rarity.name}/>
                                         </ListItem>
                                     ))
@@ -213,9 +263,16 @@ export let HomeSidebar = () => {
                             <List sx={{width: '250px'}}>
                                 {
                                     rarities.map((rarity, index) => (
-                                        <ListItem key={rarity.id} id={rarity.id} sx={{color: rarity.color}}
+                                        <ListItem key={rarity.name} id={rarity.name} sx={{color: rarity.color}}
                                                   sx={{marginLeft: '-15%'}}>
-                                            <Checkbox sx={{color: rarity.color}}/>
+                                            <Checkbox
+                                                sx={{color: rarity.color}}
+                                                id={rarity.name}
+                                                checked={raritiesFilter.includes(rarity.name)}
+                                                onChange={(e) => {
+                                                    selectRarity(rarity.name);
+                                                }}
+                                            />
                                             <ListItemText sx={{color: rarity.color}} primary={rarity.name}/>
                                         </ListItem>
                                     ))
@@ -230,9 +287,25 @@ export let HomeSidebar = () => {
                         justifyContent: "space-between",
                         width: "250px",
                     }}>
-                        <Button fullWidth size="large" variant="contained" color="secondary">Применить</Button>
-                        <Button type="reset" style={{marginLeft: '5%'}} fullWidth size="large " variant="contained"
-                                color="secondary">Сбросить</Button>
+                        <Button
+                            fullWidth
+                            size="large"
+                            variant="contained"
+                            color="secondary"
+                            onClick={handleFilters}
+                        >
+                            Применить
+                        </Button>
+                        <Button
+                            style={{marginLeft: '5%'}}
+                            fullWidth
+                            size="large "
+                            variant="contained"
+                            color="secondary"
+                            onClick={resetFilters}
+                        >
+                            Сбросить
+                        </Button>
                     </div>
                 </Box>
         </Drawer>

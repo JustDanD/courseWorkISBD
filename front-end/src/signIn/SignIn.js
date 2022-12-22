@@ -12,8 +12,9 @@ export let SignIn = (props) => {
 
     useEffect(() => {
         $.ajax({
-            url: 'http://d-pimenov.ru/auth/isAuthenticated',
-            type: 'POST',
+            url: 'http://d-pimenov.ru/api/auth/isAuthenticated',
+            type: 'GET',
+            beforeSend: function (xhr) { xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.getItem("accessToken")); },
             async: true,
             success: (res) => {
                 navigate("/", {replace: true});
@@ -30,15 +31,14 @@ export let SignIn = (props) => {
             password: document.getElementById("password").value,
         }
         $.ajax({
-            url: 'http://d-pimenov.ru/auth/signIn',
+            url: 'http://d-pimenov.ru/api/auth/signIn',
             type: 'POST',
-            headers: {
-                'Access-Control-Allow-Credentials': true
-            },
+            credentials: 'include',
             async: true,
             contentType: 'application/json; charset=utf-8',
             data: JSON.stringify(userData),
             success: (res) => {
+                localStorage.setItem("accessToken", res.accessToken);
                 navigate("/", {replace: true});
             },
             error: function (jqXHR, textStatus, errorThrown) {

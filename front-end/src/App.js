@@ -9,7 +9,7 @@ function App() {
       <Router>
         <Routes>
           <Route path="/" element={<Outlet/>}>
-              <Route index element={/*<AuthLayout component={*/<Home/>/*}/>*/}/>
+              <Route index element={<AuthLayout component={<Home/>}/>}/>
               <Route path="signIn" element={<SignIn/>}/>
               <Route path="signUp" element={<SignUp/>}/>
           </Route>

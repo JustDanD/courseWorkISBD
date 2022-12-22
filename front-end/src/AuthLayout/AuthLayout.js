@@ -10,9 +10,10 @@ export let AuthLayout = (props) => {
 
     useEffect(() => {
         $.ajax({
-            url: 'http://d-pimenov.ru/auth/isAuthenticated',
-            type: 'POST',
+            url: 'http://d-pimenov.ru/api/auth/isAuthenticated',
+            type: 'GET',
             async: true,
+            beforeSend: function (xhr) { xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.getItem("accessToken")); },
             success: (res) => {
                 setIsLogged(true);
             },
