@@ -45,4 +45,12 @@ public class StorageElementEntity {
     @NotNull
     @Min(0)
     private Long price;
+
+    public StorageElementEntity(StorageEntity storageId, CyberwareEntity cyberwareId, Long count, Double rating, Long price) {
+        this.storageId = storageId;
+        this.cyberwareId = cyberwareId;
+        this.count = count;
+        this.rating = rating;
+        this.price = price;
+    }
 }
