@@ -189,7 +189,7 @@ export let ProductCard = (props) => {
                 open={isFull}
                 setIsFull={setIsFull}
                 isProfile={props.isProfile}
-                isInstall={props.isInstalled}
+                isInstalled={props.isInstalled}
             />
         </Fragment>
     )
